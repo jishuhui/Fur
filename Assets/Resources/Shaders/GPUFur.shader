@@ -11,6 +11,9 @@ Shader "Fur/GPU Fur"
         _Gravity("Gravity", Range(0.0, 1.0)) = 0
         _Thickness("Thickness", Range(0.0, 1.0)) = 1
         _Top("Top", Range(0.0, 1.0)) = 1
+        
+        [Heade(lighting)]
+        _smoothness("Smoothness", Range(0,1)) = 0.5
     }
         SubShader
         {
@@ -60,12 +63,14 @@ Shader "Fur/GPU Fur"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
-
+            // #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/lighting.hlsl"
+                
                 float _LayerCount;
                 float _FurLength;
                 float _Gravity;
                 float _Thickness;
                 float _Top;
+                float _smoothness;
 
                 float4 _FurPatternMap_ST;
                 TEXTURE2D(_FurPatternMap);        SAMPLER(sampler_FurPatternMap);
@@ -162,6 +167,7 @@ Shader "Fur/GPU Fur"
                 float2 baseUV = TRANSFORM_TEX(input.uv, _BaseMap);
                 SurfaceData surfaceData;
                 InitializeStandardLitSurfaceData(baseUV, surfaceData);
+                surfaceData.smoothness = _smoothness;
 
                 InputData inputData = (InputData)0;
 
@@ -180,6 +186,7 @@ Shader "Fur/GPU Fur"
 
 
                 half4 color = UniversalFragmentPBR(inputData, surfaceData);
+                // half4 color = UniversalFragmentBlinnPhong(inputData, surfaceData);
 
                 float2 furPatternUV = TRANSFORM_TEX(input.uv, _FurPatternMap);
                 half fur = SAMPLE_TEXTURE2D(_FurPatternMap, sampler_FurPatternMap, furPatternUV).r;
